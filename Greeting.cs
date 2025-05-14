@@ -9,7 +9,7 @@ namespace CyberSecurity_ChatBot
 {
     internal class Greeting
     {
-        public static void AskUserName()
+        public static string AskUserName()
         {
 
             AnimatedText("Hi there I'm Pupet, What's your name & Welcome to the Cyber Security Awareness Bot!", 30);
@@ -22,6 +22,7 @@ namespace CyberSecurity_ChatBot
 
             AnimatedText($"\nHello, {name}! Let's learn about cyber security.\n", 30);
             Thread.Sleep(500);
+            return name;
         }
         static void AnimatedText(string text, int delay = 40)
         {
