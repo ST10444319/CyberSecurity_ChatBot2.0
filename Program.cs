@@ -129,42 +129,91 @@ namespace CyberSecurity_ChatBot
         public static void Main(string[] args)
         {
             AsciiArt.PlayVoiceGreeting();
-
             AsciiArt.ShowAsciiArt();
 
             Console.WriteLine("");
-
-            AnimatedText("Hi I'm Pupet your Cyber Chatbot Friend and I'm here to help you stay safe in the fast advancing world of technology.\n" +
-                "What's your name & Welcome to the Cyber Security Awareness Bot!", 30);
-            Console.ResetColor();
-
-            string userName = Console.ReadLine();
-
-            AnimatedText($"\nHello, {userName}! Let's learn about cyber security.\n", 30);
-            Thread.Sleep(500);
+            userName = Greeting.AskUserName();
 
             while (true)
             {
-                DisplayMenu();
-                Console.Write("\nSelect a category (or type 'exit' to quit): ");
-                string input = Console.ReadLine();
+                Console.Write($"\n{userName}, how can I assist you with cybersecurity today? (type 'menu' for topics or 'exit' to quit): ");
+                string input = Console.ReadLine().ToLower();
 
-                if (input.ToLower() == "exit")
+                if (input.Contains("exit"))
                 {
-                    AnimatedText("\nThank you for using the Cyber Security Awareness Bot. Stay safe online!", 30);
+                    Console.WriteLine("\nThank you for chatting! Stay safe online.");
                     break;
                 }
 
-                if (int.TryParse(input, out int categorychoice) && categorychoice >= 1 && categorychoice <= 6)
+                if (input.Contains("menu"))
                 {
-                    CategoryManager.ShowSubCategories(categorychoice);
+                    DisplayMenu();
+                    Console.Write("\nSelect a category (or type 'exit' to quit): ");
+                    string menuInput = Console.ReadLine();
+
+                    if (menuInput.ToLower() == "exit")
+                    {
+                        Console.WriteLine("\nThank you for using the Cyber Security Awareness Bot. Stay safe online!");
+                        break;
+                    }
+
+                    if (int.TryParse(menuInput, out int categorychoice) && categorychoice >= 1 && categorychoice <= 6)
+                    {
+                        CategoryManager.ShowSubCategories(categorychoice);
+                    }
+                    else
+                    {
+                        Console.WriteLine("\nInvalid selection! Please enter a number between 1 and 6.");
+                    }
+                    continue;
                 }
-                else
+
+                var words = new HashSet<string>(input.Split(new[] { ' ', ',', '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries));
+                bool understood = false;
+
+                foreach (var sentiment in sentimentResponses.Keys)
                 {
-                    AnimatedText("\nInvalid selection! Please enter a number between 1 and 6.", 20);
+                    if (input.Contains(sentiment))
+                    {
+                        Console.WriteLine($"\n{sentimentResponses[sentiment]}");
+                        understood = true;
+                    }
+                }
+
+                foreach (var word in words)
+                {
+                    string normalized = synonymMap.ContainsKey(word) ? synonymMap[word] : word;
+
+                    if (keywordResponders.TryGetValue(normalized, out var responder))
+                    {
+                        if (userInterest == "" && normalized == "privacy")
+                        {
+                            userInterest = "privacy";
+                            Console.WriteLine("\nGreat! I'll remember that you're interested in privacy.");
+                        }
+
+                        if (!string.IsNullOrEmpty(userInterest) && normalized == userInterest)
+                        {
+                            Console.WriteLine($"\nAs someone interested in {userInterest}, here's a helpful tip:");
+                        }
+
+                        Console.WriteLine($"\n🔐 {responder()}");
+                        understood = true;
+                    }
+                    else if (keywordResponses.TryGetValue(normalized, out var responses))
+                    {
+                        Console.WriteLine($"\n🔐 {responses[random.Next(responses.Count)]}");
+                        understood = true;
+                    }
+                }
+
+                if (!understood)
+                {
+                    Console.WriteLine("\n🤖 I'm not sure I understand. Could you rephrase that?");
                 }
             }
         }
+
 
         static void DisplayMenu()
         {
