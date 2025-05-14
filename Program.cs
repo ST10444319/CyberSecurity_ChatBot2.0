@@ -214,6 +214,14 @@ namespace CyberSecurity_ChatBot
             }
         }
 
+        private static string GetRandomResponse(string keyword)
+        {
+            if (keywordResponses.TryGetValue(keyword, out var responses))
+            {
+                return responses[random.Next(responses.Count)];
+            }
+            return "Sorry, I don't have information on that topic yet.";
+        }
 
         static void DisplayMenu()
         {
